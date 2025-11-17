@@ -65,7 +65,18 @@ const MasterPage = () => {
             marginBottom: '40px',
             textAlign: 'center'
           }}>
-            <div style={{fontSize: '5rem', marginBottom: '20px'}}> </div>
+             <img 
+  src={master.photo_url || "https://med-rzn.ru/wp-content/uploads/2021/09/no_image-800x600-1.jpg"}
+  alt={master.name}
+  style={{
+    width: '150px',
+    height: '150px',
+    borderRadius: '50%',
+    objectFit: 'cover',
+    border: '4px solid white',
+    marginBottom: '20px'
+  }}
+/>
             <h1>{master.name}</h1>
             <p style={{fontSize: '1.2rem', marginTop: '10px'}}>
                 {master.specialization}

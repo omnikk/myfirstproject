@@ -1,58 +1,73 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { fetchClientById, fetchAppointments } from "../api/api";
+import { Link, useNavigate } from "react-router-dom";
+import { fetchAppointments, fetchClientByUserId } from "../api/api";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 const Profile = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [client, setClient] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  const clientId = 1;
 
   useEffect(() => {
     const loadData = async () => {
+      // Проверяем авторизацию
+      const savedUser = localStorage.getItem("user");
+      if (!savedUser) {
+        alert("Пожалуйста, войдите в систему!");
+        navigate("/");
+        return;
+      }
+
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+
       try {
-        const clientData = await fetchClientById(clientId);
-        setClient(clientData);
+        // Получаем клиента пользователя
+        const clientData = await fetchClientByUserId(userData.id);
         
-        const appointmentsData = await fetchAppointments(clientId);
-        setAppointments(appointmentsData);
+        if (clientData) {
+          setClient(clientData);
+          // Получаем записи клиента
+          const appointmentsData = await fetchAppointments(clientData.id);
+          setAppointments(appointmentsData);
+        }
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    
+
     loadData();
-  }, []);
+  }, [navigate]);
 
   if (loading) {
     return (
       <div className="app">
         <Header />
         <div className="loading">
-          <p>  Загрузка профиля...</p>
+          <p>Загрузка профиля...</p>
         </div>
         <Footer />
       </div>
     );
   }
 
-  if (!client) {
+  if (!user) {
     return (
       <div className="app">
         <Header />
         <div className="container">
           <div className="content">
-            <h1>  Профиль не найден</h1>
+            <h1>Профиль не найден</h1>
             <p style={{color: '#666', marginTop: '20px'}}>
-              Пожалуйста, сначала запишитесь на услугу
+              Пожалуйста, войдите в систему
             </p>
             <Link to="/" className="btn" style={{display: 'inline-block', marginTop: '20px'}}>
-              Перейти к салонам
+              На главную
             </Link>
           </div>
         </div>
@@ -68,31 +83,43 @@ const Profile = () => {
       <div className="container">
         <div className="content">
           <div className="profile-header">
-            <div style={{fontSize: '4rem', marginBottom: '20px'}}> </div>
-            <h1>Привет, {client.name}!  </h1>
+            <div style={{fontSize: '4rem', marginBottom: '20px'}}>👤</div>
+            <h1>Привет, {user.name}!</h1>
             <p style={{fontSize: '1.1rem', marginTop: '10px', opacity: '0.9'}}>
               Добро пожаловать в ваш личный кабинет
             </p>
           </div>
           
           <div className="profile-info">
-            <h2>  Личная информация</h2>
+            <h2>Личная информация</h2>
             <div className="info-item">
-              <strong>Имя:</strong> {client.name}
+              <strong>Имя:</strong> {user.name}
             </div>
             <div className="info-item">
-              <strong>Телефон:</strong> {client.phone}
+              <strong>Логин:</strong> {user.username}
             </div>
             <div className="info-item">
-              <strong>Всего визитов:</strong> {appointments.length}
+              <strong>Роль:</strong> {user.role === "admin" ? "Администратор" : "Клиент"}
+            </div>
+            {client && (
+              <div className="info-item">
+                <strong>Телефон:</strong> {client.phone}
+              </div>
+            )}
+            <div style={{marginTop: '20px'}}>
+              <Link to="/edit-profile">
+                <button className="btn">
+                  Редактировать профиль
+                </button>
+              </Link>
             </div>
           </div>
           
           <div className="appointments-list">
-            <h2 style={{color: '#667eea', marginBottom: '30px'}}>
-                История посещений
+            <h2 style={{color: '#ff8c00', marginBottom: '30px'}}>
+              Мои записи
             </h2>
-            
+
             {appointments.length > 0 ? (
               appointments.map(appointment => {
                 const date = new Date(appointment.start_time);
@@ -109,25 +136,25 @@ const Profile = () => {
                 return (
                   <div key={appointment.id} className="appointment-item">
                     <h4>{appointment.service}</h4>
-                    <p>  {formattedDate} в {formattedTime}</p>
-                    <p>  Мастер ID: {appointment.master_id}</p>
+                    <p>Дата: {formattedDate} в {formattedTime}</p>
+                    <p>Мастер ID: {appointment.master_id}</p>
                     <p style={{
                       marginTop: '10px',
                       padding: '8px 15px',
                       background: 'white',
                       borderRadius: '20px',
                       display: 'inline-block',
-                      color: '#667eea',
+                      color: '#ff8c00',
                       fontWeight: 'bold'
                     }}>
-                      {new Date(appointment.start_time) > new Date() ? '  Предстоящая' : '  Завершена'}
+                      {new Date(appointment.start_time) > new Date() ? 'Предстоящая' : 'Завершена'}
                     </p>
                   </div>
                 );
               })
             ) : (
               <div style={{textAlign: 'center', padding: '40px'}}>
-                <div style={{fontSize: '4rem', marginBottom: '20px'}}> </div>
+                <div style={{fontSize: '4rem', marginBottom: '20px'}}>📝</div>
                 <h3 style={{color: '#666', marginBottom: '20px'}}>
                   У вас пока нет записей
                 </h3>
@@ -145,8 +172,8 @@ const Profile = () => {
             background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
             borderRadius: '15px'
           }}>
-            <h3 style={{color: '#667eea', marginBottom: '15px'}}>
-                Хотите записаться ещё?
+            <h3 style={{color: '#ff8c00', marginBottom: '15px'}}>
+              Хотите записаться ещё?
             </h3>
             <Link to="/" className="btn">
               Выбрать салон и мастера

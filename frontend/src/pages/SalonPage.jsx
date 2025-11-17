@@ -50,7 +50,8 @@ const SalonPage = () => {
       <div className="container">
         <div className="content">
           <div style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            position: 'relative',
+            background: 'linear-gradient(135deg, #808080 0%, #ff8c00 100%)',
             color: 'white',
             padding: '40px',
             borderRadius: '15px',

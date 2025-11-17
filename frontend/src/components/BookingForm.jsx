@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { createClient, createAppointment } from "../api/api";
+import React, { useState, useEffect } from "react";
+import { createClient, createAppointment, fetchClientByUserId } from "../api/api";
 
 const BookingForm = ({ salonId, masterId, masterName, onSuccess }) => {
   const [name, setName] = useState("");
@@ -8,19 +8,51 @@ const BookingForm = ({ salonId, masterId, masterName, onSuccess }) => {
   const [time, setTime] = useState("10:00");
   const [service, setService] = useState("Стрижка");
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
   const today = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+      setName(userData.name);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const client = await createClient({
-        name,
-        phone,
-        salon_id: salonId
-      });
+      let client;
+      
+      // Если пользователь залогинен
+      if (user) {
+        // Проверяем есть ли уже клиент для этого пользователя
+        const existingClient = await fetchClientByUserId(user.id);
+        
+        if (existingClient) {
+          client = existingClient;
+        } else {
+          // Создаем нового клиента с привязкой к user
+          client = await createClient({
+            name,
+            phone,
+            salon_id: salonId,
+            user_id: user.id
+          });
+        }
+      } else {
+        // Гость без аккаунта
+        client = await createClient({
+          name,
+          phone,
+          salon_id: salonId,
+          user_id: null
+        });
+      }
 
       const startTime = new Date(`${date}T${time}`);
       const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
@@ -33,14 +65,14 @@ const BookingForm = ({ salonId, masterId, masterName, onSuccess }) => {
         service
       });
 
-      alert(`  Отлично, ${name}!\n\nВы записаны на ${service.toLowerCase()}\nК мастеру: ${masterName}\nДата: ${date} в ${time}\n\nЖдём вас!`);
+      alert(`Отлично, ${name}!\n\nВы записаны на ${service.toLowerCase()}\nК мастеру: ${masterName}\nДата: ${date} в ${time}\n\nЖдём вас!`);
       
       setName("");
       setPhone("");
       setDate("");
       onSuccess && onSuccess();
     } catch (error) {
-      alert("  Ошибка при записи: " + error.message);
+      alert("Ошибка при записи: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -48,7 +80,20 @@ const BookingForm = ({ salonId, masterId, masterName, onSuccess }) => {
 
   return (
     <div className="booking-form">
-      <h2>  Записаться на услугу</h2>
+      <h2>Записаться на услугу</h2>
+      
+      {user && (
+        <div style={{
+          background: '#d4edda',
+          padding: '15px',
+          borderRadius: '10px',
+          marginBottom: '20px',
+          color: '#155724'
+        }}>
+          Вы вошли как: <strong>{user.name}</strong>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Ваше имя:</label>
@@ -58,6 +103,7 @@ const BookingForm = ({ salonId, masterId, masterName, onSuccess }) => {
             onChange={e => setName(e.target.value)} 
             placeholder="Введите ваше имя"
             required 
+            disabled={!!user}
           />
         </div>
         
@@ -104,17 +150,17 @@ const BookingForm = ({ salonId, masterId, masterName, onSuccess }) => {
         <div className="form-group">
           <label>Услуга:</label>
           <select value={service} onChange={e => setService(e.target.value)}>
-            <option value="Стрижка">   Стрижка</option>
-            <option value="Окрашивание">  Окрашивание</option>
-            <option value="Укладка">     Укладка</option>
-            <option value="Маникюр">  Маникюр</option>
-            <option value="Педикюр">  Педикюр</option>
-            <option value="SPA-уход">  SPA-уход</option>
+            <option value="Стрижка">Стрижка</option>
+            <option value="Окрашивание">Окрашивание</option>
+            <option value="Укладка">Укладка</option>
+            <option value="Маникюр">Маникюр</option>
+            <option value="Педикюр">Педикюр</option>
+            <option value="SPA-уход">SPA-уход</option>
           </select>
         </div>
         
         <button type="submit" className="btn" disabled={loading}>
-          {loading ? "  Загрузка..." : "  Записаться"}
+          {loading ? "Загрузка..." : "Записаться"}
         </button>
       </form>
     </div>

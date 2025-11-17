@@ -2,14 +2,23 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
-
+from fastapi.staticfiles import StaticFiles
+import os
+import shutil
+from fastapi import UploadFile, File
 import models
 import schemas
 import database
 
+# Создаем папку для загрузок
+os.makedirs("uploads", exist_ok=True)
+
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Beauty Salon API")
+
+# После создания app добавь:
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
@@ -101,6 +110,85 @@ def create_appointment(appointment: schemas.AppointmentCreate, db: Session = Dep
     db.refresh(db_appointment)
     return db_appointment
 
+# ==================== USERS ====================
+
+@app.post("/register/", response_model=schemas.User)
+def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    """Регистрация нового пользователя"""
+    # Проверяем есть ли уже такой username
+    db_user = db.query(models.User).filter(models.User.username == user.username).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    db_user = models.User(
+        username=user.username,
+        password=user.password,  # В реальном проекте хешировать!
+        name=user.name,
+        role=user.role
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@app.post("/login/")
+def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
+    """Вход пользователя"""
+    user = db.query(models.User).filter(
+        models.User.username == credentials.username,
+        models.User.password == credentials.password
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    return {
+        "id": user.id,
+        "username": user.username,
+        "name": user.name,
+        "role": user.role
+    }
+
+@app.get("/users/{user_id}", response_model=schemas.User)
+def get_user(user_id: int, db: Session = Depends(get_db)):
+    """Получить пользователя по ID"""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@app.get("/users/{user_id}/client")
+def get_user_client(user_id: int, db: Session = Depends(get_db)):
+    """Получить клиента по user_id"""
+    client = db.query(models.Client).filter(models.Client.user_id == user_id).first()
+    if not client:
+        return None
+    return client
+
+@app.put("/users/{user_id}", response_model=schemas.User)
+def update_user(user_id: int, user: schemas.UserBase, db: Session = Depends(get_db)):
+    """Обновить профиль пользователя"""
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db_user.name = user.name
+    db_user.username = user.username
+    db_user.role = user.role
+    
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 @app.get("/")
 def root():
     return {"message": "Beauty Salon API is running!", "docs": "/docs"}
+
+@app.post("/upload/")
+async def upload_file(file: UploadFile = File(...)):
+    """Загрузка файла"""
+    file_path = f"uploads/{file.filename}"
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    return {"filename": file.filename, "url": f"http://localhost:8080/uploads/{file.filename}"}

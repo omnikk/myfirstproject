@@ -61,3 +61,10 @@ export const fetchClientById = async (id) => {
   if (!res.ok) throw new Error("Ошибка при получении клиента");
   return res.json();
 };
+
+// НОВАЯ ФУНКЦИЯ
+export const fetchClientByUserId = async (userId) => {
+  const res = await fetch(`${BASE_URL}/users/${userId}/client`);
+  if (!res.ok) throw new Error("Ошибка при получении клиента");
+  return res.json();
+};

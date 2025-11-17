@@ -7,6 +7,7 @@ class SalonBase(BaseModel):
     address: str
     lat: Optional[float] = 55.751574
     lon: Optional[float] = 37.573856
+    photo_url: Optional[str] = ""
 
 class SalonCreate(SalonBase):
     pass
@@ -21,6 +22,7 @@ class MasterBase(BaseModel):
     salon_id: int
     specialization: Optional[str] = "Парикмахер"
     experience: Optional[str] = "3+ года"
+    photo_url: Optional[str] = ""
 
 class MasterCreate(MasterBase):
     pass
@@ -34,6 +36,7 @@ class ClientBase(BaseModel):
     name: str
     phone: str
     salon_id: int
+    user_id: Optional[int] = None
 
 class ClientCreate(ClientBase):
     pass
@@ -66,3 +69,22 @@ class AppointmentWithDetails(Appointment):
     
 class ClientProfile(Client):
     appointments: List[AppointmentWithDetails] = []
+
+# User schemas
+class UserBase(BaseModel):
+    username: str
+    name: str
+    role: Optional[str] = "client"
+
+class UserCreate(UserBase):
+    password: str
+
+class User(UserBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
