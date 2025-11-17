@@ -1,12 +1,25 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from datetime import datetime
-from . import models, database
+from typing import List
 
+from . import models, schemas, database
+
+# Создаем таблицы
 models.Base.metadata.create_all(bind=database.engine)
 
-app = FastAPI()
+app = FastAPI(title="Beauty Salon API")
 
+# CORS для фронтенда
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Dependency
 def get_db():
     db = database.SessionLocal()
     try:
@@ -14,56 +27,103 @@ def get_db():
     finally:
         db.close()
 
-# --- Салоны ---
-@app.post("/salons/")
-def create_salon(name: str, address: str, db: Session = Depends(get_db)):
-    salon = models.Salon(name=name, address=address)
-    db.add(salon)
-    db.commit()
-    db.refresh(salon)
-    return salon
+# ==================== SALONS ====================
 
-@app.get("/salons/")
+@app.get("/salons/", response_model=List[schemas.Salon])
 def read_salons(db: Session = Depends(get_db)):
+    """Получить все салоны"""
     return db.query(models.Salon).all()
 
-# --- Мастера ---
-@app.post("/masters/")
-def create_master(name: str, salon_id: int, db: Session = Depends(get_db)):
-    master = models.Master(name=name, salon_id=salon_id)
-    db.add(master)
+@app.get("/salons/{salon_id}", response_model=schemas.SalonWithMasters)
+def read_salon(salon_id: int, db: Session = Depends(get_db)):
+    """Получить салон по ID с мастерами"""
+    salon = db.query(models.Salon).filter(models.Salon.id == salon_id).first()
+    if not salon:
+        raise HTTPException(status_code=404, detail="Salon not found")
+    return salon
+
+@app.post("/salons/", response_model=schemas.Salon)
+def create_salon(salon: schemas.SalonCreate, db: Session = Depends(get_db)):
+    """Создать новый салон"""
+    db_salon = models.Salon(name=salon.name, address=salon.address)
+    db.add(db_salon)
     db.commit()
-    db.refresh(master)
+    db.refresh(db_salon)
+    return db_salon
+
+# ==================== MASTERS ====================
+
+@app.get("/masters/", response_model=List[schemas.Master])
+def read_masters(salon_id: int = None, db: Session = Depends(get_db)):
+    """Получить всех мастеров (опционально по salon_id)"""
+    query = db.query(models.Master)
+    if salon_id:
+        query = query.filter(models.Master.salon_id == salon_id)
+    return query.all()
+
+@app.get("/masters/{master_id}", response_model=schemas.Master)
+def read_master(master_id: int, db: Session = Depends(get_db)):
+    """Получить мастера по ID"""
+    master = db.query(models.Master).filter(models.Master.id == master_id).first()
+    if not master:
+        raise HTTPException(status_code=404, detail="Master not found")
     return master
 
-@app.get("/masters/")
-def read_masters(db: Session = Depends(get_db)):
-    return db.query(models.Master).all()
-
-# --- Клиенты ---
-@app.post("/clients/")
-def create_client(name: str, phone: str, salon_id: int, db: Session = Depends(get_db)):
-    client = models.Client(name=name, phone=phone, salon_id=salon_id)
-    db.add(client)
+@app.post("/masters/", response_model=schemas.Master)
+def create_master(master: schemas.MasterCreate, db: Session = Depends(get_db)):
+    """Создать нового мастера"""
+    db_master = models.Master(name=master.name, salon_id=master.salon_id)
+    db.add(db_master)
     db.commit()
-    db.refresh(client)
-    return client
+    db.refresh(db_master)
+    return db_master
 
-@app.get("/clients/")
+# ==================== CLIENTS ====================
+
+@app.get("/clients/", response_model=List[schemas.Client])
 def read_clients(db: Session = Depends(get_db)):
+    """Получить всех клиентов"""
     return db.query(models.Client).all()
 
-# --- Записи/расписание ---
-@app.post("/appointments/")
-def create_appointment(master_id: int, client_id: int, start_time: str, end_time: str, service: str, db: Session = Depends(get_db)):
-    start_dt = datetime.fromisoformat(start_time)
-    end_dt = datetime.fromisoformat(end_time)
-    appointment = models.Appointment(master_id=master_id, client_id=client_id, start_time=start_dt, end_time=end_dt, service=service)
-    db.add(appointment)
+@app.post("/clients/", response_model=schemas.Client)
+def create_client(client: schemas.ClientCreate, db: Session = Depends(get_db)):
+    """Создать нового клиента"""
+    db_client = models.Client(
+        name=client.name, 
+        phone=client.phone, 
+        salon_id=client.salon_id
+    )
+    db.add(db_client)
     db.commit()
-    db.refresh(appointment)
-    return appointment
+    db.refresh(db_client)
+    return db_client
 
-@app.get("/appointments/")
+# ==================== APPOINTMENTS ====================
+
+@app.get("/appointments/", response_model=List[schemas.Appointment])
 def read_appointments(db: Session = Depends(get_db)):
+    """Получить все записи"""
     return db.query(models.Appointment).all()
+
+@app.post("/appointments/", response_model=schemas.Appointment)
+def create_appointment(
+    appointment: schemas.AppointmentCreate, 
+    db: Session = Depends(get_db)
+):
+    """Создать новую запись"""
+    db_appointment = models.Appointment(
+        master_id=appointment.master_id,
+        client_id=appointment.client_id,
+        start_time=appointment.start_time,
+        end_time=appointment.end_time,
+        service=appointment.service
+    )
+    db.add(db_appointment)
+    db.commit()
+    db.refresh(db_appointment)
+    return db_appointment
+
+# Root endpoint
+@app.get("/")
+def root():
+    return {"message": "Beauty Salon API is running!"}
