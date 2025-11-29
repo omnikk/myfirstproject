@@ -314,7 +314,7 @@ const AdminDashboard = () => {
             marginBottom: '40px'
           }}>
             <div className="financial-card">
-              <div className="financial-value">{financialOverview.total_revenue.toLocaleString()} ₽</div>
+              <div className="financial-value">{financialOverview.total_revenue.toLocaleString()} </div>
               <div className="financial-label">Выручка</div>
             </div>
             <div className="financial-card">
@@ -322,7 +322,7 @@ const AdminDashboard = () => {
               <div className="financial-label">Записей</div>
             </div>
             <div className="financial-card">
-              <div className="financial-value">{financialOverview.average_check.toLocaleString()} ₽</div>
+              <div className="financial-value">{financialOverview.average_check.toLocaleString()} </div>
               <div className="financial-label">Средний чек</div>
             </div>
             <div className="financial-card" style={{background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)'}}>
@@ -330,7 +330,7 @@ const AdminDashboard = () => {
               <div className="financial-label">Отменено</div>
             </div>
             <div className="financial-card" style={{background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)'}}>
-              <div className="financial-value">{financialOverview.cancelled_revenue.toLocaleString()} ₽</div>
+              <div className="financial-value">{financialOverview.cancelled_revenue.toLocaleString()}  </div>
               <div className="financial-label">Потери</div>
             </div>
           </div>
@@ -365,7 +365,7 @@ const AdminDashboard = () => {
                   {salon.salon_name}
                 </h3>
                 <div style={{fontSize: '2rem', fontWeight: 'bold', color: '#28a745', marginBottom: '10px'}}>
-                  {salon.revenue.toLocaleString()} ₽
+                  {salon.revenue.toLocaleString()}  
                 </div>
                 <div style={{color: '#666', fontSize: '0.9rem'}}>
                   {salon.appointments_count} записей
@@ -403,7 +403,7 @@ const AdminDashboard = () => {
                   <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
                     <span style={{fontWeight: '600'}}>{item.service}</span>
                     <span style={{color: '#28a745', fontWeight: '600'}}>
-                      {item.revenue.toLocaleString()} ₽ ({item.count} записей)
+                      {item.revenue.toLocaleString()}   ({item.count} записей)
                     </span>
                   </div>
                   <div style={{background: '#f0f0f0', borderRadius: '10px', height: '12px', overflow: 'hidden'}}>
@@ -459,13 +459,13 @@ const AdminDashboard = () => {
                   }}>
                     <td style={{padding: '15px', fontWeight: '600'}}>{master.master_name}</td>
                     <td style={{padding: '15px', color: '#666'}}>{master.salon_name}</td>
-                    <td style={{padding: '15px', textAlign: 'right'}}>{master.hourly_rate} ₽</td>
+                    <td style={{padding: '15px', textAlign: 'right'}}>{master.hourly_rate}  </td>
                     <td style={{padding: '15px', textAlign: 'right'}}>{master.appointments_count}</td>
                     <td style={{padding: '15px', textAlign: 'right', fontWeight: 'bold', color: '#28a745'}}>
-                      {master.total_revenue.toLocaleString()} ₽
+                      {master.total_revenue.toLocaleString()}  
                     </td>
                     <td style={{padding: '15px', textAlign: 'right', fontWeight: 'bold', color: '#667eea'}}>
-                      {master.master_earnings.toLocaleString()} ₽
+                      {master.master_earnings.toLocaleString()}  
                     </td>
                   </tr>
                 ))}
