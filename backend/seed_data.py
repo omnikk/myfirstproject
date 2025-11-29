@@ -29,10 +29,10 @@ def seed_database():
         print("Создание салонов...")
         
         salons_data = [
-            {"name": "Салон красоты 'Эльза'", "address": "ул. Тверская, д. 12", "lat": 55.764276, "lon": 37.606831, "photo_url": "https://med-rzn.ru/wp-content/uploads/2021/09/no_image-800x600-1.jpg"},
-            {"name": "Beauty Studio 'Жасмин'", "address": "Кутузовский проспект, д. 5", "lat": 55.752004, "lon": 37.566833, "photo_url": "https://med-rzn.ru/wp-content/uploads/2021/09/no_image-800x600-1.jpg"},
-            {"name": "Салон 'Magnolia'", "address": "ул. Арбат, д. 20", "lat": 55.750584, "lon": 37.588039, "photo_url": "https://med-rzn.ru/wp-content/uploads/2021/09/no_image-800x600-1.jpg"},
-            {"name": "SPA-центр 'Релакс'", "address": "Ленинский проспект, д. 45", "lat": 55.706892, "lon": 37.584573, "photo_url": "https://med-rzn.ru/wp-content/uploads/2021/09/no_image-800x600-1.jpg"}
+            {"name": "Салон красоты 'Эльза'", "address": "ул. Тверская, д. 12", "lat": 55.764276, "lon": 37.606831, "photo_url": "https://delosmelo.ru/files/images/331169af67b00ca0d328700849e72994.jpg"},
+            {"name": "Beauty Studio 'Жасмин'", "address": "Кутузовский проспект, д. 5", "lat": 55.752004, "lon": 37.566833, "photo_url": "https://www.equipnet.ru/netcat_files/userfiles/52079/Salon_krasoty/004.jpg"},
+            {"name": "Салон 'Magnolia'", "address": "ул. Арбат, д. 20", "lat": 55.750584, "lon": 37.588039, "photo_url": "https://s.dirsalona.ru/images/raspolojenie-salona-krasoty11.jpg"},
+            {"name": "SPA-центр 'Релакс'", "address": "Ленинский проспект, д. 45", "lat": 55.706892, "lon": 37.584573, "photo_url": "https://irecommend.ru/sites/default/files/imagecache/copyright1/user-images/441913/JobDbImWpMBqKKZCgQykoQ.jpg"}
         ]
         
         salons = []
@@ -47,15 +47,47 @@ def seed_database():
         print("Создание мастеров...")
         
         masters_data = [
-            {"name": "Анна Иванова", "hourly_rate": 350.0},
-            {"name": "Мария Петрова", "hourly_rate": 320.0},
-            {"name": "Елена Сидорова", "hourly_rate": 400.0},
-            {"name": "Ольга Смирнова", "hourly_rate": 280.0},
-            {"name": "Татьяна Козлова", "hourly_rate": 300.0},
-            {"name": "Наталья Волкова", "hourly_rate": 380.0},
-            {"name": "Ирина Соколова", "hourly_rate": 290.0},
-            {"name": "Екатерина Морозова", "hourly_rate": 330.0}
-        ]
+    {
+        "name": "Анна Иванова", 
+        "hourly_rate": 350.0,
+        "photo_url": "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400"
+    },
+    {
+        "name": "Мария Петрова", 
+        "hourly_rate": 320.0,
+        "photo_url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400"
+    },
+    {
+        "name": "Елена Сидорова", 
+        "hourly_rate": 400.0,
+        "photo_url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400"
+    },
+    {
+        "name": "Ольга Смирнова", 
+        "hourly_rate": 280.0,
+        "photo_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400"
+    },
+    {
+        "name": "Татьяна Козлова", 
+        "hourly_rate": 300.0,
+        "photo_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400"
+    },
+    {
+        "name": "Наталья Волкова", 
+        "hourly_rate": 380.0,
+        "photo_url": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400"
+    },
+    {
+        "name": "Ирина Соколова", 
+        "hourly_rate": 290.0,
+        "photo_url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400"
+    },
+    {
+        "name": "Екатерина Морозова", 
+        "hourly_rate": 330.0,
+        "photo_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400"
+    }
+]
         
         masters = []
         for i, salon in enumerate(salons):
@@ -67,12 +99,12 @@ def seed_database():
                         salon_id=salon.id,
                         specialization="Парикмахер-стилист",
                         experience="5+ лет опыта",
-                        photo_url="https://med-rzn.ru/wp-content/uploads/2021/09/no_image-800x600-1.jpg",
+                        photo_url=masters_data[master_index]["photo_url"],  # Теперь берется из данных
                         hourly_rate=masters_data[master_index]["hourly_rate"]
                     )
                     db.add(master)
                     masters.append(master)
-        
+
         db.commit()
         print(f"Создано {len(masters)} мастеров")
         
