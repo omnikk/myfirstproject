@@ -180,6 +180,40 @@ def update_user(user_id: int, user: schemas.UserBase, db: Session = Depends(get_
     db.refresh(db_user)
     return db_user
 
+@app.put("/salons/{salon_id}", response_model=schemas.Salon)
+def update_salon(salon_id: int, salon: schemas.SalonCreate, db: Session = Depends(get_db)):
+    """Обновить салон"""
+    db_salon = db.query(models.Salon).filter(models.Salon.id == salon_id).first()
+    if not db_salon:
+        raise HTTPException(status_code=404, detail="Salon not found")
+    
+    db_salon.name = salon.name
+    db_salon.address = salon.address
+    db_salon.lat = salon.lat
+    db_salon.lon = salon.lon
+    db_salon.photo_url = salon.photo_url
+    
+    db.commit()
+    db.refresh(db_salon)
+    return db_salon
+
+@app.put("/masters/{master_id}", response_model=schemas.Master)
+def update_master(master_id: int, master: schemas.MasterCreate, db: Session = Depends(get_db)):
+    """Обновить мастера"""
+    db_master = db.query(models.Master).filter(models.Master.id == master_id).first()
+    if not db_master:
+        raise HTTPException(status_code=404, detail="Master not found")
+    
+    db_master.name = master.name
+    db_master.salon_id = master.salon_id
+    db_master.specialization = master.specialization
+    db_master.experience = master.experience
+    db_master.photo_url = master.photo_url
+    
+    db.commit()
+    db.refresh(db_master)
+    return db_master
+
 @app.get("/")
 def root():
     return {"message": "Beauty Salon API is running!", "docs": "/docs"}
