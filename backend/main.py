@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 from fastapi.staticfiles import StaticFiles
 import os
@@ -214,3 +215,55 @@ async def upload_file(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
     
     return {"filename": file.filename, "url": f"http://localhost:8080/uploads/{file.filename}"}
+
+@app.get("/services-with-prices/")
+def get_services_with_prices(db: Session = Depends(get_db)):
+    services_prices = {
+        "Стрижка": 1500,
+        "Окрашивание": 3500,
+        "Укладка": 1200,
+        "Маникюр": 1800,
+        "Педикюр": 2000,
+        "SPA-уход": 4500,
+        "Мелирование": 4000,
+        "Химическая завивка": 5000,
+        "Кератиновое выпрямление": 6000
+    }
+    
+    return [
+        {"name": name, "price": price}
+        for name, price in services_prices.items()
+    ]
+
+@app.get("/masters/{master_id}/available-slots")
+def get_available_slots(master_id: int, date: str, db: Session = Depends(get_db)):
+    from datetime import datetime, timedelta
+    
+    # Парсим дату
+    target_date = datetime.fromisoformat(date).date()
+    
+    # Получаем все записи мастера на эту дату
+    existing_appointments = db.query(models.Appointment).filter(
+        models.Appointment.master_id == master_id,
+        func.date(models.Appointment.start_time) == target_date,
+        models.Appointment.status == "confirmed"  # Только подтвержденные
+    ).all()
+    
+    # Занятые часы
+    busy_hours = set()
+    for apt in existing_appointments:
+        busy_hours.add(apt.start_time.hour)
+    
+    # Рабочие часы (9:00 - 20:00)
+    working_hours = list(range(9, 21))  # до 20:00 включительно
+    
+    # Формируем все слоты
+    all_slots = []
+    for hour in working_hours:
+        all_slots.append({
+            "time": f"{hour:02d}:00",
+            "hour": hour,
+            "available": hour not in busy_hours
+        })
+    
+    return all_slots
