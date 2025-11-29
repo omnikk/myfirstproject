@@ -9,16 +9,15 @@ from fastapi import UploadFile, File
 import models
 import schemas
 import database
-
-# Создаем папку для загрузок
+from analytics import router as analytics_router
 os.makedirs("uploads", exist_ok=True)
 
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Beauty Salon API")
-
-# После создания app добавь:
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+app.include_router(analytics_router, prefix="/api", tags=["analytics"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -110,19 +109,15 @@ def create_appointment(appointment: schemas.AppointmentCreate, db: Session = Dep
     db.refresh(db_appointment)
     return db_appointment
 
-# ==================== USERS ====================
-
 @app.post("/register/", response_model=schemas.User)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    """Регистрация нового пользователя"""
-    # Проверяем есть ли уже такой username
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
     db_user = models.User(
         username=user.username,
-        password=user.password,  # В реальном проекте хешировать!
+        password=user.password,
         name=user.name,
         role=user.role
     )
@@ -133,7 +128,6 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/login/")
 def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
-    """Вход пользователя"""
     user = db.query(models.User).filter(
         models.User.username == credentials.username,
         models.User.password == credentials.password
@@ -151,7 +145,6 @@ def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
 
 @app.get("/users/{user_id}", response_model=schemas.User)
 def get_user(user_id: int, db: Session = Depends(get_db)):
-    """Получить пользователя по ID"""
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -159,7 +152,6 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 @app.get("/users/{user_id}/client")
 def get_user_client(user_id: int, db: Session = Depends(get_db)):
-    """Получить клиента по user_id"""
     client = db.query(models.Client).filter(models.Client.user_id == user_id).first()
     if not client:
         return None
@@ -167,7 +159,6 @@ def get_user_client(user_id: int, db: Session = Depends(get_db)):
 
 @app.put("/users/{user_id}", response_model=schemas.User)
 def update_user(user_id: int, user: schemas.UserBase, db: Session = Depends(get_db)):
-    """Обновить профиль пользователя"""
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -182,7 +173,6 @@ def update_user(user_id: int, user: schemas.UserBase, db: Session = Depends(get_
 
 @app.put("/salons/{salon_id}", response_model=schemas.Salon)
 def update_salon(salon_id: int, salon: schemas.SalonCreate, db: Session = Depends(get_db)):
-    """Обновить салон"""
     db_salon = db.query(models.Salon).filter(models.Salon.id == salon_id).first()
     if not db_salon:
         raise HTTPException(status_code=404, detail="Salon not found")
@@ -199,7 +189,6 @@ def update_salon(salon_id: int, salon: schemas.SalonCreate, db: Session = Depend
 
 @app.put("/masters/{master_id}", response_model=schemas.Master)
 def update_master(master_id: int, master: schemas.MasterCreate, db: Session = Depends(get_db)):
-    """Обновить мастера"""
     db_master = db.query(models.Master).filter(models.Master.id == master_id).first()
     if not db_master:
         raise HTTPException(status_code=404, detail="Master not found")
@@ -220,7 +209,6 @@ def root():
 
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
-    """Загрузка файла"""
     file_path = f"uploads/{file.filename}"
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)

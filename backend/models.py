@@ -10,7 +10,6 @@ class User(Base):
     name = Column(String)
     role = Column(String, default="client")
     
-    # Связи
     client = relationship("Client", back_populates="user", uselist=False)
 
 class Salon(Base):
@@ -33,6 +32,7 @@ class Master(Base):
     specialization = Column(String, default="Парикмахер")
     experience = Column(String, default="3+ года")
     photo_url = Column(String, default="")
+    hourly_rate = Column(Float, default=300.0)
 
     salon = relationship("Salon", back_populates="masters")
     appointments = relationship("Appointment", back_populates="master")
@@ -57,6 +57,8 @@ class Appointment(Base):
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     service = Column(String)
+    price = Column(Float, default=0.0)
+    status = Column(String, default="confirmed")
 
     master = relationship("Master", back_populates="appointments")
     client = relationship("Client", back_populates="appointments")

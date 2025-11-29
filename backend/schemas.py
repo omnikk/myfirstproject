@@ -23,6 +23,7 @@ class MasterBase(BaseModel):
     specialization: Optional[str] = "Парикмахер"
     experience: Optional[str] = "3+ года"
     photo_url: Optional[str] = ""
+    hourly_rate: Optional[float] = 300.0
 
 class MasterCreate(MasterBase):
     pass
@@ -52,6 +53,8 @@ class AppointmentBase(BaseModel):
     start_time: datetime
     end_time: datetime
     service: str
+    price: Optional[float] = 0.0
+    status: Optional[str] = "confirmed"
 
 class AppointmentCreate(AppointmentBase):
     pass
@@ -70,7 +73,6 @@ class AppointmentWithDetails(Appointment):
 class ClientProfile(Client):
     appointments: List[AppointmentWithDetails] = []
 
-# User schemas
 class UserBase(BaseModel):
     username: str
     name: str
