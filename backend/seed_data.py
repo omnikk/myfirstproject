@@ -99,7 +99,7 @@ def seed_database():
                         salon_id=salon.id,
                         specialization="Парикмахер-стилист",
                         experience="5+ лет опыта",
-                        photo_url=masters_data[master_index]["photo_url"],  # Теперь берется из данных
+                        photo_url=masters_data[master_index]["photo_url"], 
                         hourly_rate=masters_data[master_index]["hourly_rate"]
                     )
                     db.add(master)

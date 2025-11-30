@@ -246,7 +246,7 @@ def get_available_slots(master_id: int, date: str, db: Session = Depends(get_db)
     existing_appointments = db.query(models.Appointment).filter(
         models.Appointment.master_id == master_id,
         func.date(models.Appointment.start_time) == target_date,
-        models.Appointment.status == "confirmed"  # Только подтвержденные
+        models.Appointment.status == "confirmed"
     ).all()
     
     # Занятые часы
