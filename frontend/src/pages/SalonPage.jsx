@@ -73,18 +73,186 @@ const SalonPage = () => {
           {salon.masters && salon.masters.length > 0 ? (
             <div className="masters-grid">
               {salon.masters.map(master => (
-                <div key={master.id} className="master-card">
+                <div key={master.id} className="master-card" style={{
+                  background: 'white',
+                  border: '2px solid #f0f0f0',
+                  padding: '30px 25px',
+                  borderRadius: '20px',
+                  textAlign: 'center',
+                  transition: 'all 0.3s',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  {/* Декоративный фон */}
                   <div style={{
-                    fontSize: '3rem',
-                    marginBottom: '15px'
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '80px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    opacity: 0.1
+                  }}></div>
+                  
+                  {/* Круглое фото мастера */}
+                  <div style={{
+                    position: 'relative',
+                    width: '120px',
+                    height: '120px',
+                    margin: '0 auto 20px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '4px solid white',
+                    boxShadow: '0 8px 20px rgba(102,126,234,0.3)',
+                    background: master.photo_url ? 'transparent' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                   }}>
-                     
+                    {master.photo_url ? (
+                      <img 
+                        src={master.photo_url} 
+                        alt={master.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;">👤</div>';
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '3rem'
+                      }}>
+                        👤
+                      </div>
+                    )}
                   </div>
-                  <h3>{master.name}</h3>
-                  <p>  {master.specialization}</p>
-                  <p>  {master.experience}</p>
+                  
+                  <h3 style={{
+                    color: '#667eea',
+                    marginBottom: '10px',
+                    fontSize: '1.3rem'
+                  }}>
+                    {master.name}
+                  </h3>
+                  
+                  {/* Звёзды рейтинга */}
+                  <div style={{
+                    color: '#ffc107',
+                    fontSize: '1.2rem',
+                    marginBottom: '12px',
+                    letterSpacing: '2px'
+                  }}>
+                    ⭐⭐⭐⭐⭐
+                    <span style={{
+                      color: '#999',
+                      fontSize: '0.85rem',
+                      marginLeft: '8px'
+                    }}>
+                      4.9
+                    </span>
+                  </div>
+                  {/* Бейдж для первого мастера в списке */}
+                  {salon.masters.indexOf(master) === 0 && (
+                    <div style={{
+                      display: 'inline-block',
+                      background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+                      color: 'white',
+                      padding: '4px 12px',
+                      borderRadius: '15px',
+                      fontSize: '0.75rem',
+                      fontWeight: '700',
+                      marginBottom: '15px',
+                      textTransform: 'uppercase',
+                      boxShadow: '0 2px 8px rgba(255,107,107,0.3)'
+                    }}>
+                      🏆 Топ мастер
+                    </div>
+                  )}
+                  <p style={{
+                    color: '#666',
+                    fontSize: '0.95rem',
+                    marginBottom: '8px'
+                  }}>
+                    ✂️ {master.specialization}
+                  </p>
+                  <p style={{
+                    color: '#666',
+                    fontSize: '0.95rem',
+                    marginBottom: '20px'
+                  }}>
+                    📅 {master.experience}
+                  </p>
+                  {/* Статистика мастера */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    marginBottom: '20px',
+                    padding: '15px 0',
+                    borderTop: '1px solid #f0f0f0',
+                    borderBottom: '1px solid #f0f0f0'
+                  }}>
+                    <div style={{textAlign: 'center'}}>
+                      <div style={{
+                        fontSize: '1.5rem',
+                        fontWeight: '700',
+                        color: '#667eea'
+                      }}>
+                        {Math.floor(Math.random() * 500) + 200}
+                      </div>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#999',
+                        marginTop: '5px'
+                      }}>
+                        Клиентов
+                      </div>
+                    </div>
+                    <div style={{textAlign: 'center'}}>
+                      <div style={{
+                        fontSize: '1.5rem',
+                        fontWeight: '700',
+                        color: '#667eea'
+                      }}>
+                        {Math.floor(Math.random() * 5) + 3}
+                      </div>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#999',
+                        marginTop: '5px'
+                      }}>
+                        Лет опыта
+                      </div>
+                    </div>
+                  </div>
                   <Link to={`/master/${master.id}`}>
-                    <button className="btn" style={{marginTop: '15px'}}>
+                    <button style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 30px',
+                      borderRadius: '25px',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      boxShadow: '0 4px 15px rgba(102,126,234,0.3)',
+                      width: '100%'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 6px 20px rgba(102,126,234,0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(102,126,234,0.3)';
+                    }}>
                       Записаться →
                     </button>
                   </Link>

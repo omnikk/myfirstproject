@@ -27,7 +27,7 @@ const Header = () => {
       <header>
         <div className="container">
           <Link to="/" style={{textDecoration: 'none'}}>
-            <h1 style={{color: '#ff8c00'}}>Салон Красоты</h1>
+            <h1 style={{color: '#ff8c00'}}>💇‍♀️ Салон Красоты</h1>
           </Link>
           <nav>
             <Link to="/">Главная</Link>
@@ -80,6 +80,42 @@ const Header = () => {
         onClose={() => setShowLogin(false)}
         onLogin={handleLogin}
       />
+      
+      {/* Плавающая кнопка звонка */}
+      <a 
+        href="tel:+79991234567"
+        style={{
+          position: 'fixed',
+          bottom: '30px',
+          right: '30px',
+          width: '70px',
+          height: '70px',
+          background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '2rem',
+          color: 'white',
+          boxShadow: '0 8px 25px rgba(37,211,102,0.4)',
+          zIndex: 9999,
+          animation: 'pulse 2s ease-in-out infinite',
+          cursor: 'pointer',
+          textDecoration: 'none',
+          transition: 'all 0.3s'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.transform = 'scale(1.15)';
+          e.target.style.boxShadow = '0 12px 35px rgba(37,211,102,0.6)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = 'scale(1)';
+          e.target.style.boxShadow = '0 8px 25px rgba(37,211,102,0.4)';
+        }}
+        title="Позвонить нам"
+      >
+        📞
+      </a>
     </>
   );
 };

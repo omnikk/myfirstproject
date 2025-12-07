@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ServiceSelector from "./ServiceSelector";
 
 const BookingForm = ({ master, onClose, onSuccess }) => {
   const [services, setServices] = useState([]);
@@ -134,48 +135,43 @@ const BookingForm = ({ master, onClose, onSuccess }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{maxWidth: '900px'}}>
         <h2>Записаться к мастеру</h2>
         <p style={{ color: "#667eea", fontWeight: "600", marginBottom: "20px" }}>
           {master.name}
         </p>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontWeight: "600" }}>
-              Выберите услугу:
+<div style={{ marginBottom: "30px" }}>
+            <label style={{ 
+              display: "block", 
+              marginBottom: "20px", 
+              fontWeight: "700", 
+              fontSize: "1.2rem", 
+              color: "#333" 
+            }}>
+              ✨ Выберите услугу:
             </label>
-            <select
-              value={selectedService}
-              onChange={(e) => setSelectedService(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "8px",
-                border: "2px solid #e0e0e0",
-                fontSize: "1rem",
-              }}
-            >
-              <option value="">-- Выберите услугу --</option>
-              {services.map((service, index) => (
-                <option key={index} value={service.name}>
-                  {service.name} - {service.price.toLocaleString()} ₽
-                </option>
-              ))}
-            </select>
+            
+            <ServiceSelector 
+              services={services}
+              selectedService={selectedServiceObj}
+              onSelectService={(service) => setSelectedService(service.name)}
+            />
+            
             {selectedServiceObj && (
               <div style={{
-                marginTop: "10px",
-                padding: "15px",
+                marginTop: "20px",
+                padding: "20px",
                 background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)",
                 color: "white",
-                borderRadius: "8px",
+                borderRadius: "15px",
                 textAlign: "center",
-                fontWeight: "600",
-                fontSize: "1.1rem"
+                fontWeight: "700",
+                fontSize: "1.3rem",
+                boxShadow: "0 4px 15px rgba(40, 167, 69, 0.3)"
               }}>
-                Стоимость: {selectedServiceObj.price.toLocaleString()} ₽
+                💰 Стоимость услуги: {selectedServiceObj.price.toLocaleString()} ₽
               </div>
             )}
           </div>
